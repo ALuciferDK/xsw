@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Cache;
 
-
 class RegisterController extends Controller
 {
     //返回参数值
@@ -30,6 +29,7 @@ class RegisterController extends Controller
         //返回
         return(json_encode($arr ,true));
     }
+
     /*
      * 获取验证码方法
      * */
@@ -91,12 +91,14 @@ class RegisterController extends Controller
         foreach ($array as $v){
             $validate .= $v;
         }
-        Cache::put($data['email'],$validate,'3');
+        Cache::put($data['email'],$validate,'5');
         $flag = Mail::raw('您的激活密码是'.$validate.',请您在3分钟内输入验证，过期无效。',function ($message){
             $message->to($this->email);   // 收件人的邮箱地址
             $message->subject('学术网账号激活邮件');    // 邮件主题
         });
-        var_dump($flag);die;
+        $this->code='200';
+        $this->message='email已发送';
+        return $this->returninfo();
     }
     /*
      * 注册方法，传递整体数据过来。然后后台进行验证
@@ -109,16 +111,17 @@ class RegisterController extends Controller
         if(empty($result))
         {
             $this->code='400';
-            $this->message='验证码过期';
+            $this->message='邮箱验证码过期';
             return $this->returninfo();
         }
         else if($result != $data['key'])
         {
             $this->code='400';
-            $this->message='验证码错误';
+            $this->message='邮箱验证码错误';
             return $this->returninfo();
         }
         unset($data['key']);
-
+        
     }
+
 }
