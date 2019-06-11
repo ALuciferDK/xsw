@@ -22,4 +22,6 @@ Route::any('content_sel','HomeController@SearchContent');//查看文章
 Route::any('periodical_sel','HomeController@periodical_sel');//查看期刊
 
 Route::get('captcha','RegisterController@captcha');
-Route::post('captcha/validate','RegisterController@captchaValidate');
+Route::any('validate','RegisterController@captchaValidate');
+Route::any('email','RegisterController@SendEmail');
+Route::any('email/get','RegisterController@emailGetData');
