@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Cache;
+use App\Services\AdminServices;
 
 class RegisterController extends Controller
 {
@@ -68,19 +69,19 @@ class RegisterController extends Controller
     public function SendEmail(Request $request)
     {
         $data = $request->input();
-        if(empty($data['email']) || empty($data['token']))
-        {
-            $this->code='400';
-            $this->message='参数错误';
-            return $this->returninfo();
-        }
-        $token = Cache::get($data['token']);
-        if($token != $data['token'])
-        {
-            $this->code='400';
-            $this->message='token错误';
-            return $this->returninfo();
-        }
+        // if(empty($data['email']) || empty($data['token']))
+        // {
+        //     $this->code='400';
+        //     $this->message='参数错误';
+        //     return $this->returninfo();
+        // }
+        // $token = Cache::get($data['token']);
+        // if($token != $data['token'])
+        // {
+        //     $this->code='400';
+        //     $this->message='token错误';
+        //     return $this->returninfo();
+        // }
         $this->email = $data['email'];
         //随机生成的验证码
         $array = array_merge(range('a','b'),range('A','B'),range('0','9'));
@@ -96,13 +97,11 @@ class RegisterController extends Controller
             $message->to($this->email);   // 收件人的邮箱地址
             $message->subject('学术网账号激活邮件');    // 邮件主题
         });
-        $this->code='200';
-        $this->message='email已发送';
-        return $this->returninfo();
+        var_dump($flag);die;
     }
     /*
      * 注册方法，传递整体数据过来。然后后台进行验证
-     *
+     * a_name,a_email,a_password,
      * */
     public function register(Request $request)
     {
@@ -116,12 +115,32 @@ class RegisterController extends Controller
         }
         else if($result != $data['key'])
         {
-            $this->code='400';
+            $this->cod1585808204e='400';
             $this->message='邮箱验证码错误';
             return $this->returninfo();
         }
         unset($data['key']);
-        
+        $data = $this->data;//获取传入的数据
+        $adminServices = new AdminServices();//实例化services
+        $result = $adminServices->insertAdmin($data);//调用管理员添加
+        if($result === true)
+        {
+            return $this->returninfo();
+        }
+        else if($result === 2)
+        {
+            
+            $this->code='400';
+            $this->message='用户名或邮箱已存在';
+             return $this->returninfo();
+        }
+        else
+        {
+            $this->code='400';
+            $this->message='注册失败,请重试';
+             return $this->returninfo();
+
+        }
     }
 
 }

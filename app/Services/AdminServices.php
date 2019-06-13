@@ -56,7 +56,7 @@ class AdminServices
     /*
      * 添加管理员
      * */
-    public function insertAdmin($data)//
+    public function insertAdmin($data,$role=3)//
     {
         unset($data['token']);//删除传递多余token
         $flag = true;//树立旗帜标注，以此作为判断标志
@@ -78,7 +78,7 @@ class AdminServices
                 }
                 else
                 {
-                    $data = ['a_id'=>$id,'role_id'=>2];//组合条件
+                    $data = ['a_id'=>$id,'role_id'=>$role];//组合条件
                     $result = $this->roleModel->insertOne($data);//给管理员添加角色，此角色为固定角色
                     if(!$result)
                     {
