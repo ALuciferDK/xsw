@@ -69,19 +69,19 @@ class RegisterController extends Controller
     public function SendEmail(Request $request)
     {
         $data = $request->input();
-        // if(empty($data['email']) || empty($data['token']))
-        // {
-        //     $this->code='400';
-        //     $this->message='参数错误';
-        //     return $this->returninfo();
-        // }
-        // $token = Cache::get($data['token']);
-        // if($token != $data['token'])
-        // {
-        //     $this->code='400';
-        //     $this->message='token错误';
-        //     return $this->returninfo();
-        // }
+        if(empty($data['email']) || empty($data['token']))
+        {
+            $this->code='400';
+            $this->message='参数错误';
+            return $this->returninfo();
+        }
+        $token = Cache::get($data['token']);
+        if($token != $data['token'])
+        {
+            $this->code='400';
+            $this->message='token错误';
+            return $this->returninfo();
+        }
         $this->email = $data['email'];
         //随机生成的验证码
         $array = array_merge(range('a','b'),range('A','B'),range('0','9'));
