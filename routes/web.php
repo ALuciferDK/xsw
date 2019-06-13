@@ -25,3 +25,7 @@ Route::get('captcha','RegisterController@captcha');
 Route::any('validate','RegisterController@captchaValidate');
 Route::any('email','RegisterController@SendEmail');
 Route::any('email/get','RegisterController@emailGetData');
+
+Route::group(['middleware'=>'power'],function (){
+
+});

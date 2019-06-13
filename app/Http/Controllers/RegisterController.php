@@ -12,8 +12,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Cache;
-use App\Services\AdminServices;
-
 class RegisterController extends Controller
 {
     //返回参数值
@@ -30,7 +28,6 @@ class RegisterController extends Controller
         //返回
         return(json_encode($arr ,true));
     }
-
     /*
      * 获取验证码方法
      * */
@@ -93,15 +90,15 @@ class RegisterController extends Controller
             $validate .= $v;
         }
         Cache::put($data['email'],$validate,'5');
-        $flag = Mail::raw('您的激活密码是'.$validate.',请您在3分钟内输入验证，过期无效。',function ($message){
+        //var_dump($this->email);die;
+        Mail::raw('您的激活密码是'.$validate.',请您在5分钟内输入验证，过期无效。',function ($message){
             $message->to($this->email);   // 收件人的邮箱地址
             $message->subject('学术网账号激活邮件');    // 邮件主题
         });
-        var_dump($flag);die;
     }
     /*
      * 注册方法，传递整体数据过来。然后后台进行验证
-     * a_name,a_email,a_password,
+     *
      * */
     public function register(Request $request)
     {
@@ -110,37 +107,16 @@ class RegisterController extends Controller
         if(empty($result))
         {
             $this->code='400';
-            $this->message='邮箱验证码过期';
+            $this->message='验证码过期';
             return $this->returninfo();
         }
         else if($result != $data['key'])
         {
-            $this->cod1585808204e='400';
-            $this->message='邮箱验证码错误';
+            $this->code='400';
+            $this->message='验证码错误';
             return $this->returninfo();
         }
         unset($data['key']);
-        $data = $this->data;//获取传入的数据
-        $adminServices = new AdminServices();//实例化services
-        $result = $adminServices->insertAdmin($data);//调用管理员添加
-        if($result === true)
-        {
-            return $this->returninfo();
-        }
-        else if($result === 2)
-        {
-            
-            $this->code='400';
-            $this->message='用户名或邮箱已存在';
-             return $this->returninfo();
-        }
-        else
-        {
-            $this->code='400';
-            $this->message='注册失败,请重试';
-             return $this->returninfo();
 
-        }
     }
-
 }
