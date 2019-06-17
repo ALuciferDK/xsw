@@ -13,8 +13,8 @@ use Cache;
 
 class LoginController extends Controller
 {
-    public function Login()
+    public function Login(Request $request)
     {
-    	
+
     }
 }
