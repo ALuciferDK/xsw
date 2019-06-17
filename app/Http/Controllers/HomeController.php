@@ -23,7 +23,6 @@ class HomeController extends Controller
         die(json_encode($arr ,true));
     }
 
-
     /**
      * 查找期刊
      * year 第几年
@@ -200,32 +199,21 @@ class HomeController extends Controller
             $this->code='400';
             $this->message='参数值不能为空';
         }else{
-            $result = (array)DB::table('admin')
+            $result = (array)DB::table('article_zan')
             ->where('uid',$uid)
-            ->select('article_id')
+            ->where('aid',$aid)
             ->first();
             DB::beginTransaction();//开启事务
             if(!empty($result)){
 
-                if(in_array($aid,explode(',',$result['article_id']))){
-                   $user= DB::table('admin')->where('uid',$uid)->update(['article_id'=>$result['article_id'].",$aid"]);
-                   $title= DB::table('article_title')->where('aid',$aid)->increment('click1');
-                    $this->message='点赞成功';
-                }else{
-                    $arr=explode(',',$result['article_id']);
-                    foreach($arr as $k=>&$v) {
-                        if($aid == $v) unset($arr[$k]);
-                    }
-                    $result['article_id']=implode(',', $arr);
-                   $user=  DB::table('admin')->where('uid',$uid)->update(['article_id'=>$result['article_id'].",$aid"]);
-                   $title= DB::table('article_title')->where('aid',$aid)->decrement('click1');
-                     $this->message='取消点赞';
-                }
-                
+               $user=  DB::table('article_zan')->where('uid',$uid)->where('aid',$aid)->delete();
+               $title= DB::table('article_title')->where('aid',$aid)->decrement('click1');
+               $this->message='取消点赞';
             }else{
-              $user=  DB::table('admin')->where('uid',$uid)->update(['article_id'=>$result['article_id'].",$aid"]);
+
+              $user=  DB::table('article_zan')->insert(['uid'=>$uid,'aid'=>$aid]);
               $title=  DB::table('article_title')->where('aid',$aid)->increment('click1');
-                 
+              $this->message='点赞成功';
             }
            if($user&&$title){
                DB::commit();//提交事务 
@@ -249,20 +237,13 @@ class HomeController extends Controller
             $this->code='400';
             $this->message='参数值不能为空';
         }else{
-            $result = (array)DB::table('admin as a')
+            $result = (array)DB::table('article_zan')
             ->where('uid',$uid)
-            ->select('article_id')
+            ->where('aid',$aid)
             ->first();
             if(!empty($result)){
-
-                if(in_array($aid,explode(',',$result['article_id']))){
-                    $this->message='该用户已点赞';
-                    $this->content=['zan'=>1];
-                }else{
-                    $this->message='该用户未点赞';
-                    $this->content=['zan'=>0];
-                }
-                
+                $this->message='该用户已点赞';
+                $this->content=['zan'=>1]; 
             }else{
                 $this->message='该用户未点赞';
                 $this->content=['zan'=>0];
