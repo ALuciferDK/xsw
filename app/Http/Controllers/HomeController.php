@@ -23,7 +23,6 @@ class HomeController extends Controller
         die(json_encode($arr ,true));
     }
 
-
     /**
      * 查找期刊
      * year 第几年
@@ -179,12 +178,79 @@ class HomeController extends Controller
                 $result = json_encode($result,true);
                 $result = json_decode($result,true);
                 $this->content=$result;
-            }else{   
+            }else{
                 $this->code='400';
                 $this->message='查询失败,请重新操作';
             }
         }
         return $this->returninfo();
+    }
+
+     //用户对文章点赞&取消点赞
+    /**
+     * cache保存用户最近点赞
+     * 判断用户对同1文章1分钟内连续点赞超过一定次数就进行限制
+     */
+    public function do_zan(Request $request){
+
+        $aid = (int)$request->input('aid');
+        $uid = (int)$request->input('uid');
+        if(empty($aid) || empty($uid)){
+            $this->code='400';
+            $this->message='参数值不能为空';
+        }else{
+            $result = (array)DB::table('article_zan')
+            ->where('uid',$uid)
+            ->where('aid',$aid)
+            ->first();
+            DB::beginTransaction();//开启事务
+            if(!empty($result)){
+
+               $user=  DB::table('article_zan')->where('uid',$uid)->where('aid',$aid)->delete();
+               $title= DB::table('article_title')->where('aid',$aid)->decrement('click1');
+               $this->message='取消点赞';
+            }else{
+
+              $user=  DB::table('article_zan')->insert(['uid'=>$uid,'aid'=>$aid]);
+              $title=  DB::table('article_title')->where('aid',$aid)->increment('click1');
+              $this->message='点赞成功';
+            }
+           if($user&&$title){
+               DB::commit();//提交事务 
+           }else{
+               DB::rollBack();//回滚事务
+               $this->code=400;
+               $this->message='请稍后重试';
+           }
+             
+        }
+        return $this->returninfo();
+
+    }
+
+    //查看用户是否对文章点赞
+    public function sel_zan(Request $request){
+
+        $aid = (int)$request->input('aid');
+        $uid = (int)$request->input('uid');
+        if(empty($aid) || empty($uid)){
+            $this->code='400';
+            $this->message='参数值不能为空';
+        }else{
+            $result = (array)DB::table('article_zan')
+            ->where('uid',$uid)
+            ->where('aid',$aid)
+            ->first();
+            if(!empty($result)){
+                $this->message='该用户已点赞';
+                $this->content=['zan'=>1]; 
+            }else{
+                $this->message='该用户未点赞';
+                $this->content=['zan'=>0];
+            }
+        }
+        return $this->returninfo();
+
     }
 
 

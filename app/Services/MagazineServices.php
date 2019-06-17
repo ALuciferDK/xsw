@@ -256,17 +256,13 @@ class MagazineServices
      * 
      * year 年份
      * title 标题期号
-     * url 采集网址
-     * url_status url成功采集 0未采集，1成功
-     * create 创建时间
-     * is_flag 0草稿，1待发布，2已发布
+     * is_flag 0待发布，1已发布
      */
 	public function addtitle(){
         $arr=array(
                 'year'=>$this->arr['year'],
                 'title'=>$this->arr['title'],
                 'is_flag'=>$this->arr['is_flag']??0,
-                'create'=>date('Y-m-d H:i:s'),
             );
 		return $this->titlemodel->insertId($arr);
 	}
@@ -299,13 +295,12 @@ class MagazineServices
             if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content))))
             {
                  $arr=array(
-                    't_id'=>$this->arr['t_id'],
-                    'i_img'=>$new_file,
-                    'i_title'=>$addName, //默认为图片名称
-                    'updtime'=>date('Y-m-d H:i:s'),
+                    'id'=>$this->arr['t_id'],
+                    'url'=>$new_file,
+                    'time'=>date('Y-m-d H:i:s'),
                 );
                  //添加封面
-                 $tt= (array)DB::table('magazine_title')->where('t_id',$this->arr['t_id'])->select('url')->first();
+                 $tt= (array)DB::table('magazine_title')->where('id',$this->arr['t_id'])->select('url')->first();
                 if(isset($tt['url']) && empty($tt['url'])){
                     $this->titlemodel->upd(['url'=>$new_file],['t_id'=>$this->arr['t_id']]);
                  }
