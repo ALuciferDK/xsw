@@ -179,12 +179,97 @@ class HomeController extends Controller
                 $result = json_encode($result,true);
                 $result = json_decode($result,true);
                 $this->content=$result;
-            }else{   
+            }else{
                 $this->code='400';
                 $this->message='查询失败,请重新操作';
             }
         }
         return $this->returninfo();
+    }
+
+     //用户对文章点赞&取消点赞
+    /**
+     * cache保存用户最近点赞
+     * 判断用户对同1文章1分钟内连续点赞超过一定次数就进行限制
+     */
+    public function do_zan(Request $request){
+
+        $aid = (int)$request->input('aid');
+        $uid = (int)$request->input('uid');
+        if(empty($aid) || empty($uid)){
+            $this->code='400';
+            $this->message='参数值不能为空';
+        }else{
+            $result = (array)DB::table('admin')
+            ->where('uid',$uid)
+            ->select('article_id')
+            ->first();
+            DB::beginTransaction();//开启事务
+            if(!empty($result)){
+
+                if(in_array($aid,explode(',',$result['article_id']))){
+                   $user= DB::table('admin')->where('uid',$uid)->update(['article_id'=>$result['article_id'].",$aid"]);
+                   $title= DB::table('article_title')->where('aid',$aid)->increment('click1');
+                    $this->message='点赞成功';
+                }else{
+                    $arr=explode(',',$result['article_id']);
+                    foreach($arr as $k=>&$v) {
+                        if($aid == $v) unset($arr[$k]);
+                    }
+                    $result['article_id']=implode(',', $arr);
+                   $user=  DB::table('admin')->where('uid',$uid)->update(['article_id'=>$result['article_id'].",$aid"]);
+                   $title= DB::table('article_title')->where('aid',$aid)->decrement('click1');
+                     $this->message='取消点赞';
+                }
+                
+            }else{
+              $user=  DB::table('admin')->where('uid',$uid)->update(['article_id'=>$result['article_id'].",$aid"]);
+              $title=  DB::table('article_title')->where('aid',$aid)->increment('click1');
+                 
+            }
+           if($user&&$title){
+               DB::commit();//提交事务 
+           }else{
+               DB::rollBack();//回滚事务
+               $this->code=400;
+               $this->message='请稍后重试';
+           }
+             
+        }
+        return $this->returninfo();
+
+    }
+
+    //查看用户是否对文章点赞
+    public function sel_zan(Request $request){
+
+        $aid = (int)$request->input('aid');
+        $uid = (int)$request->input('uid');
+        if(empty($aid) || empty($uid)){
+            $this->code='400';
+            $this->message='参数值不能为空';
+        }else{
+            $result = (array)DB::table('admin as a')
+            ->where('uid',$uid)
+            ->select('article_id')
+            ->first();
+            if(!empty($result)){
+
+                if(in_array($aid,explode(',',$result['article_id']))){
+                    $this->message='该用户已点赞';
+                    $this->content=['zan'=>1];
+                }else{
+                    $this->message='该用户未点赞';
+                    $this->content=['zan'=>0];
+                }
+                
+            }else{
+                $this->message='该用户未点赞';
+                $this->content=['zan'=>0];
+            }
+        }
+        return $this->returninfo();
+
     }
 
 
