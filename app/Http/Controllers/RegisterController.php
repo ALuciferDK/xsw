@@ -110,11 +110,10 @@ class RegisterController extends Controller
             $validate .= $v;
         }
         Cache::put($data['email'],$validate,'5');
-        $flag = Mail::raw('您的激活密码是'.$validate.',请您在3分钟内输入验证，过期无效。',function ($message){
+        Mail::raw('您的激活密码是'.$validate.',请您在3分钟内输入验证，过期无效。',function ($message){
             $message->to($this->email);   // 收件人的邮箱地址
             $message->subject('学术网账号激活邮件');    // 邮件主题
         });
-        var_dump($flag);die;
     }
     /*
      * 注册方法，传递整体数据过来。然后后台进行验证
@@ -190,11 +189,10 @@ class RegisterController extends Controller
             $validate .= $v;
         }
         Cache::put($data['email'],$validate,'5');
-        $flag = Mail::raw('您的验证密码是'.$validate.',请您在3分钟内输入验证，过期无效。',function ($message){
+        Mail::raw('您的验证密码是'.$validate.',请您在3分钟内输入验证，过期无效。',function ($message){
             $message->to($this->email);   // 收件人的邮箱地址
             $message->subject('学术网账号找回密码邮件');    // 邮件主题
         });
-        var_dump($flag);die;
     }
 
 }
