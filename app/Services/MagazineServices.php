@@ -110,13 +110,13 @@ class MagazineServices
                 'time'=>date('Y-m-d H:i:s'),
                 'click2'=>$this->arr['click2']??0,
             );
-            $aid=$this->wordtitle->->insertId($arr);
+            $aid=$this->wordtitle->insertId($arr);
         }else{
             $aid=$this->arr['is_con'];
         }
         $flag=1;
         foreach($this->content as $k=>$v){
-            if(!$this->wordtitle->->insertOne(['content'=>$v,'aid'=>$aid])){
+            if(!$this->wordtitle->insertOne(['content'=>$v,'aid'=>$aid])){
                 $flag1=0;
             };
         }
