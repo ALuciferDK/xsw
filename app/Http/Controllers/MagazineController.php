@@ -53,6 +53,7 @@ class MagazineController extends CommonController
 	}
 	/**查看杂志 */
 	public function sel(Request $request){
+		
 		$this->selPower($request);
 		try {
 			$m_ser=new MagazineServices($this->data);
