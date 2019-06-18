@@ -20,7 +20,7 @@ class RegisterController extends Controller
     protected $code = '200'; //结果编码
     protected $message = 'success'; //结果说明
     protected $content = []; //返回数据，json
-    protected $email = '2856984195@qq.com';
+    protected $email = '';
     protected function returninfo(){
         $arr = array(
             'code' => $this->code, //结果编码
