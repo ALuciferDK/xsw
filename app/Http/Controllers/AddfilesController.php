@@ -10,6 +10,9 @@ header('Access-Control-Allow-Origin:*');
 
 class AddfilesController extends Controller
 {
+    
+
+     //文件上传
 	 public function addfile(){
 
         $this->maxSize = 3145728;

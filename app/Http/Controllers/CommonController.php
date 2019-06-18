@@ -45,7 +45,6 @@ class CommonController extends Controller
             $this->errorInfo('-3');
         }
         /*
-        
         else if($sign != $arr['sign'])
         {
             $this->add_log('log','sing_error_log','签名错误');
@@ -53,7 +52,7 @@ class CommonController extends Controller
             $this->message = '签名不一致：'.$sign;
             $this->content = $arr;
             $this->returninfo();
-        }
+        }s
         */
          //解析发送过来的数据
         $this->data = $arr['content'];
