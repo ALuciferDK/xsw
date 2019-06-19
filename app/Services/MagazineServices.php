@@ -25,31 +25,65 @@ class MagazineServices
         $this->arr=$arr;//数据
     	$this->titlemodel = new MagazineModel('pre_periodical_title');//期刊
     	$this->imgmodel = new MagazineModel('pre_periodical_content');
-        $this->wordtitle = new MagazineModel('article_title');//文章
-        $this->wordcon = new MagazineModel('article_content');
-        $this->addfiles = new AddfilesController();
+        $this->wordtitle = new MagazineModel('article_title');//文章标题
+        $this->wordcon = new MagazineModel('article_content');//文章内容
+        $this->wordfile = new MagazineModel('article_file');//文章附件
+        //$this->addfiles = new AddfilesController();
         
     }
 
-    public $file_dir='files/';
+    //修改文章状态
+    /**
+     * 普通用户只能更改文章状态：草稿,待审核
+       state 文章状态 0待审核，1已审核，2审核失败，3草稿
+       aid 文章id
+     */
+    public function upd_word(){
+
+        $res=$this->wordtitle->upd(['click2'=>$this->arr['state']],['aid'=>$this->arr['aid']]);
+        if(empty($res)){
+            return ['文章状态修改失败'];
+        }
+        return true;
+    }
+
     //文章附件-大文件切片上传
     /**
      * file_name 附件名称
        index 切片序号
        aid 文章id
+       file 上传的文件
+       --------------
+        [file] => Array
+        (
+            [name] => QQ浏览器截图20181228163652.png
+            [type] => image/png
+            [tmp_name] => C:\WINDOWS\php34F9.tmp
+            [error] => 0
+            [size] => 207926
+        )
      */
     public function add_file_qie(){
 
-        $dir=$this->file_dir;
+        $res=(array)$this->wordtitle->getOne(['aid'=>$this->arr['aid']]);
+        if(empty($res)||$res['click2']!=3){
+            return ['当前文章状态不能进行修改'];
+        }
+        $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+        if(empty($ext) ||$ext!='mp4' ||$ext!='mov'){
+            return ['文件格式错误'];
+        }
+
+        $dir='files/video/'.date('Ymd').'/'.$this->arr['aid'].'/'.iconv("utf-8","gbk",$this->arr['file_name']).'/';
         if(!is_dir($dir)){
             mkdir($dir, 0777, true);
         }
-         $name=explode('.',$_POST["name"]);
-         if($name['1']!='mp4'&&$name['1']!='mov'){
-            return ['msg'=>'文件格式错误'];
-         }
-        $target = $dir .iconv("utf-8","gbk",$_POST["name"]) . '-' . $_POST['index']; //接收文件名时进行转码，防止中文乱码。
-        move_uploaded_file($_FILES['file']['tmp_name'], $target);
+        $url = $dir .iconv("utf-8","gbk",$this->arr['file_name']) . '-' . $this->arr['index']; //接收文件名时进行转码，防止中文乱码。
+        $res=move_uploaded_file($_FILES['file']['tmp_name'], $url);
+        if(empty($res)){
+            return ['上传失败'];
+        }
+        return $url;
     }
     //文章附件-合并切片文件
     /**
@@ -58,30 +92,81 @@ class MagazineServices
        file_name 附件名称
      */
     public function add_file_he(){
-        
-        $dir=$this->file_dir;
-        $target = $dir .iconv("utf-8","gbk",$_POST["name"]);
-        $dst = fopen($target, 'wb');
 
-        for($i = 0; $i <= $_POST['index']; $i++) {
-            $slice = $target . '-' . $i;
+        $res=(array)$this->wordtitle->getOne(['aid'=>$this->arr['aid']]);
+        if(empty($res)||$res['click2']!=3){
+            return ['当前文章状态不能进行修改'];
+        }
+        $dir='files/video/'.date('Ymd').'/'.$this->arr['aid'].'/'.iconv("utf-8","gbk",$this->arr['file_name']).'/';
+        $url = $dir .iconv("utf-8","gbk",$this->arr['file_name']);
+        $dst = fopen($url, 'wb');
+
+        for($i = 0; $i <=  $this->arr['index']; $i++) {
+            $slice = $url . '-' . $i;
             $src = fopen($slice, 'rb');
             stream_copy_to_stream($src, $dst);
             fclose($src);//关闭文件
             unlink($slice);//删除文件
         }
         fclose($dst);
+        $arr=array(
+                    'aid'=>$this->arr['aid'],
+                    'url'=>$url,
+                    'file_name'=>$this->arr['file_name'],
+                );
+         // var_dump($arr);die;
+        if(!$this->wordfile->insertOne($arr)){
+            return ['添加附件失败'];
+        };
+        return $url;
     }
 
     //文章附件-普通文件上传
+    /**
+     * file 上传的文件
+       aid 文章id
+       file_name 文件名称
+     */
     public function add_file(){
-       $this->addfiles->addfile();
+
+       if(empty($this->arr['aid'])){
+         return ['参数不对'];
+       }
+        $res=(array)$this->wordtitle->getOne(['aid'=>$this->arr['aid']]);
+        if(empty($res)||$res['click2']!=3){
+            return ['当前文章状态不能进行修改'];
+        }
+        //判断文件后缀
+        $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+        if(empty($ext) ||$ext!='mp4' ||$ext!='mov'){
+            return ['文件格式错误'];
+        }
+        //新建文件夹
+        $dir='files/file/'.date('Ymd').'/'.$this->arr['aid'].'/';
+        if(!is_dir($dir)){
+            mkdir($dir, 0777, true);
+        }
+        $url = $dir .'file'.time().$this->arr['aid']; 
+        $res=move_uploaded_file($_FILES['file']['tmp_name'], $url);
+        if(empty($res)){
+            return ['上传失败'];
+        }
+        $arr=array(
+                    'aid'=>$this->arr['aid'],
+                    'url'=>$url,
+                    'file_name'=>'',
+                );
+         // var_dump($arr);die;
+        if(!$this->wordfile->insertOne($arr)){
+            return ['添加附件失败'];
+        };
+        return $url;
     }
 
     //添加文章
     /** 
+    --判断文章是否草稿 草稿才能添加,修改
     --普通用户只能更改文章状态：草稿,待审核，
-    --判断文章是否已审核 已审核后不能在添加,修改
 
      * title 文章标题
        author 作者
@@ -89,34 +174,44 @@ class MagazineServices
        uid 用户id
        catid 所属分类id
        summary 摘要
-       comtent [文章正文,文章正文2]
        time 添加时间
        click2 文章状态 ---0待审核，1已审核，2审核失败，3草稿
 
-       is_con 0标题con都添加，值不为0的话【不添加文章标题表，作为aid添加进内容表】
      */
-    public function word(){
+    public function word_title(){
 
-        DB::beginTransaction();//开启事务
+        $arr=array(
+            'title'=>$this->arr['year'],
+            'author'=>$this->arr['title'],
+            'username'=>$this->arr['username'],
+            'uid'=>$this->arr['uid'],
+            'catid'=>$this->arr['catid'],
+            'summary'=>$this->arr['summary'],
+            'time'=>date('Y-m-d H:i:s'),
+            'click2'=>$this->arr['click2']??0,
+        );
+        return $this->wordtitle->insertId($arr);
+    }
+    //文章内容添加
+    /**
+    --判断文章是否已审核 已审核后不能在添加,修改
+    
+     * content [文章正文,文章正文2]
+       aid 文章标题id
+     */
+    public function word_con(){
 
-        if(empty($this->arr['is_con'])){
-            $arr=array(
-                'title'=>$this->arr['year'],
-                'author'=>$this->arr['title'],
-                'username'=>$this->arr['username'],
-                'uid'=>$this->arr['uid'],
-                'catid'=>$this->arr['catid'],
-                'summary'=>$this->arr['summary'],
-                'time'=>date('Y-m-d H:i:s'),
-                'click2'=>$this->arr['click2']??0,
-            );
-            $aid=$this->wordtitle->insertId($arr);
-        }else{
-            $aid=$this->arr['is_con'];
+       if(empty($this->arr['aid']) || empty($this->arr['content']) ){
+         return ['参数不能为空'];
+       }
+        $res=(array)$this->wordtitle->getOne(['aid'=>$this->arr['aid']]);
+        if(empty($res)||$res['click2']!=3){
+            return ['当前文章状态不能进行修改'];
         }
-        $flag=1;
-        foreach($this->content as $k=>$v){
-            if(!$this->wordtitle->insertOne(['content'=>$v,'aid'=>$aid])){
+        DB::beginTransaction();//开启事务
+          $flag=1;
+        foreach($this->arr['content'] as $k=>$v){
+            if(!$this->wordcon->insertOne(['content'=>$v,'aid'=>$aid])){
                 $flag1=0;
             };
         }
@@ -127,7 +222,6 @@ class MagazineServices
            DB::rollBack();//回滚事务
            return false;
         }
-        
     }
 
 
@@ -137,7 +231,7 @@ class MagazineServices
      * title 标题期号
      * is_flag 0待发布，1已发布
      */
-	public function addtitle(){
+	public function add_title(){
         $arr=array(
                 'year'=>$this->arr['year'],
                 'title'=>$this->arr['title'],
@@ -147,45 +241,41 @@ class MagazineServices
 	}
 	/**添加期刊图片
      *
-     * t_id         杂志标题表id
-     * img          图片链接
-     * i_title      图片标题
+     * id         期刊标题表id
+       file         上传的图片
      */
-	public function addimg(){
-        
-        //得到文件对象
-        $base64_image_content = $this->arr['file'];
-        $this->arr['t_id']=(int)$this->arr['t_id'];
-        //匹配出图片的格式
-        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_image_content, $result))
-        {
-            $type = $result[2];
-            // print_r($result);die;
-            $new_file = './img/'.date('Ymd').'/';
-            if(!file_exists($new_file))
-            {
-                //检查是否有该文件夹，如果没有就创建，并给予最高权限
-                mkdir($new_file, 0777,true);
-            }
-         
-            $new_file = $new_file.'img'.time().'_'.$this->arr['t_id'].".{$type}";
-            //解码图片
-            if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content))))
-            {
-                 $arr=array(
-                    'id'=>$this->arr['t_id'],
-                    'url'=>$new_file,
+	public function add_img(){
+       
+       if(empty($this->arr['t_id'])){
+         return ['参数不对'];
+       }
+
+       //判断文件后缀
+        $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+        if(empty($ext) || ($ext!='png' &&$ext!='jpg' &&$ext!='jpeg')){
+            return ['文件格式错误'];
+        }
+        //新建文件夹
+        $dir='files/img/'.date('Ymd').'/'.$this->arr['id'].'/';
+        if(!is_dir($dir)){
+            mkdir($dir, 0777, true);
+        }
+        $url = $dir .'img'.time().$this->arr['id']; //接收文件名时进行转码，防止中文乱码。
+        $res=move_uploaded_file($_FILES['file']['tmp_name'], $url);
+        if(empty($res)){
+            return ['上传失败'];
+        }
+       
+         $arr=array(
+                    'id'=>$this->arr['id'],
+                    'url'=>$url,
                     'time'=>date('Y-m-d H:i:s'),
                 );
-                 // var_dump($arr);die;
-                if(!$this->imgmodel->insertOne($arr)){
-                    return false;
-                };
-            }
-
-        }
-        
-        return true;
+         // var_dump($arr);die;
+        if(!$this->imgmodel->insertOne($arr)){
+            return ['期刊图片添加失败'];
+        };
+        return $url;
 
 	}
     

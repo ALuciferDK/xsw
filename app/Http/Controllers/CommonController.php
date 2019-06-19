@@ -22,19 +22,16 @@ class CommonController extends Controller
      * */
     public function __construct(Request $request)
     {  
-        if($arr=file_get_contents("php://input"))
-        {
+      if($arr=file_get_contents("php://input")){
             //接值
             $arr=json_decode($arr,1);
             $content=json_encode($arr['content']);
-        }else
-        {
+      }else{
             $this->code = '2';
             $this->message = '操作异常,post请求';
             $this->returninfo();
-        }
-        if(empty($arr) || !isset($arr['timestamp'])|| !isset($arr['sign'])|| !isset($content))
-        {//如果传输的
+      } 
+        if(empty($arr) || !isset($arr['timestamp'])|| !isset($arr['sign'])|| !isset($content)){//如果传输的
             $this->errorInfo('-7');
         }else{
             $this->add_log('log','postlog',$arr);
@@ -44,10 +41,10 @@ class CommonController extends Controller
         $sign = md5($arr['timestamp'] . $content . env('APP_KEY_COMMON'));
         
         //签名错误
-        if (time() - $arr['timestamp'] > 30)
-        {
+        if (time() - $arr['timestamp'] > 30) {
             $this->errorInfo('-3');
         }
+        /*
         else if($sign != $arr['sign'])
         {
             $this->add_log('log','sing_error_log','签名错误');
@@ -55,9 +52,12 @@ class CommonController extends Controller
             $this->message = '签名不一致：'.$sign;
             $this->content = $arr;
             $this->returninfo();
-        }
+        }s
+        */
          //解析发送过来的数据
         $this->data = $arr['content'];
+        //判断传递参数是否有误
+        $this->selData($request);
         
     }
 
@@ -237,7 +237,74 @@ class CommonController extends Controller
         
     }
 
+    //判断传递参数是否有误
+    public function selData($request){
 
+        $routeName = $request->route()->uri();//获取当前访问的uri
+        $data = $this->data;//获取用户传递的数据
+
+         switch ($routeName)
+        {
+            case 'magazine/login':
+                if(!isset($data['a_name'])|| !isset($data['a_password'])){
+                    $this->errorInfo('-7');
+                }
+                break;
+            case 'admin/show':
+                 if(!isset($data['token'])){
+                    $this->errorInfo('-7');
+                }
+                break;
+            case 'admin/add':
+                 if(!isset($data['token']) ||!isset($data['a_email']) ||!isset($data['a_name'])|| !isset($data['a_password']) ||!isset($data['a_is_freeze'])){
+                    $this->errorInfo('-7');
+                }
+                break;
+            case 'admin/del':
+                 if(!isset($data['token'])|| !isset($data['a_id'])){
+                    $this->errorInfo('-7');
+                }
+                break;
+            case 'admin/upd':
+                 if(!isset($data['token'])|| !isset($data['a_id'])){
+                    $this->errorInfo('-7');
+                }elseif(!isset($data['a_is_freeze']) && !isset($data['a_password'])){
+                    $this->errorInfo('-7');
+                }
+                break;
+            case 'magazine/add':
+                 if(!isset($data['token']) || !isset($data['if_add'])){
+                    $this->errorInfo('-7');
+                }elseif($data['if_add']==0 && (!isset($data['year']) || !isset($data['title']))){
+                    $this->errorInfo('-7');
+                }elseif($data['if_add']==1 && (!isset($data['t_id']) || !isset($data['i_title'])|| !isset($data['file']))){
+                    $this->errorInfo('-7');
+                }elseif($data['if_add']==2 && (!isset($data['t_id']) || !isset($data['url']))){
+                    $this->errorInfo('-7');
+                }elseif($data['if_add']==3 && (!isset($data['i_id']) || !isset($data['c_id']))){
+                    $this->errorInfo('-7');
+                }
+                break;
+            case 'magazine/upd':
+                 if(!isset($data['token']) ||!isset($data['is_flag']) ||!isset($data['if_upd']) ||!isset($data['id'])){
+                    $this->errorInfo('-7');
+                }
+                break;
+            case 'magazine/show':
+                if(!isset($data['token']) || !isset($data['if_sel'])){
+                    $this->errorInfo('-7');
+                }elseif(!isset($data['if_sel']) && !isset($data['t_id'])){ 
+                    $this->errorInfo('-7');
+                }
+                break;
+            case 'magazine/del':
+                 if(!isset($data['token']) || (!isset($data['c_id']) &&!isset($data['t_id']))){
+                     $this->errorInfo('-7');
+                }
+                break;
+
+        }
+    }
 }
 /*
 传参格式说明：

@@ -13,19 +13,19 @@ class AddfilesController extends Controller
     
 
      //文件上传
-	 public function addfile(){
+	 public function addfile($saveName=''){
 
-        $this->maxSize = 3145728;
+        $this->maxSize = 0;
         $this->exts = array('jpg', 'gif', 'png', 'jpeg');
         $this->savePath = './img/';
         $this->rootPath = './';
-        $this->saveName='';
+        $this->saveName=$saveName;
         $this->replace=1;
         $info = $this->upload();
         if(!$info){
          return $this->getError();
         }
-        return $info['key']['savepath'].$info['key']['savename'];
+        return $info['file']['savepath'].$info['file']['savename'];
        
      }
 
