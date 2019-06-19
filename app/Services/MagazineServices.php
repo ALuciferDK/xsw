@@ -98,9 +98,9 @@ class MagazineServices
             return ['当前文章状态不能进行修改'];
         }
         $dir='files/video/'.date('Ymd').'/'.$this->arr['aid'].'/'.iconv("utf-8","gbk",$this->arr['file_name']).'/';
+       
         $url = $dir .iconv("utf-8","gbk",$this->arr['file_name']);
         $dst = fopen($url, 'wb');
-
         for($i = 0; $i <=  $this->arr['index']; $i++) {
             $slice = $url . '-' . $i;
             $src = fopen($slice, 'rb');
@@ -110,10 +110,10 @@ class MagazineServices
         }
         fclose($dst);
         $arr=array(
-                    'aid'=>$this->arr['aid'],
-                    'url'=>$url,
-                    'file_name'=>$this->arr['file_name'],
-                );
+            'aid'=>$this->arr['aid'],
+            'url'=>$url,
+            'file_name'=>$this->arr['file_name'],
+        );
          // var_dump($arr);die;
         if(!$this->wordfile->insertOne($arr)){
             return ['添加附件失败'];
@@ -190,7 +190,11 @@ class MagazineServices
             'time'=>date('Y-m-d H:i:s'),
             'click2'=>$this->arr['click2']??0,
         );
-        return $this->wordtitle->insertId($arr);
+        $res= $this->wordtitle->insertId($arr);
+        if(!$res){
+             return ['添加文章内容失败'];
+        }
+        return true;
     }
     //文章内容添加
     /**
@@ -220,7 +224,7 @@ class MagazineServices
             return true;
         }else{
            DB::rollBack();//回滚事务
-           return false;
+           return ['添加文章内容失败'];
         }
     }
 
