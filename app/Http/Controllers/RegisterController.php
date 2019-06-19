@@ -101,16 +101,10 @@ class RegisterController extends Controller
 
         $this->email = $data['email'];
         //随机生成的验证码
-        $array = array_merge(range('a','b'),range('A','B'),range('0','9'));
-        shuffle($array);
-        $array = array_flip($array);
-        $array = array_rand($array,4);
-        $validate = '';
-        foreach ($array as $v){
-            $validate .= $v;
-        }
+        $validate = $this->randomkeys(5);
+
         Cache::put($data['email'],$validate,'5');
-        Mail::raw('您的激活密码是'.$validate.',请您在3分钟内输入验证，过期无效。',function ($message){
+        Mail::raw('您的激活密码是'.$validate.',请您在5分钟内输入验证，过期无效。',function ($message){
             $message->to($this->email);   // 收件人的邮箱地址
             $message->subject('学术网账号激活邮件');    // 邮件主题
         });
@@ -180,19 +174,24 @@ class RegisterController extends Controller
         }
         $this->email = $data['email'];
         //随机生成的验证码
-        $array = array_merge(range('a','b'),range('A','B'),range('0','9'));
-        shuffle($array);
-        $array = array_flip($array);
-        $array = array_rand($array,4);
-        $validate = '';
-        foreach ($array as $v){
-            $validate .= $v;
-        }
+        $validate = $this->randomkeys(5);
+
         Cache::put($data['email'],$validate,'5');
-        Mail::raw('您的验证密码是'.$validate.',请您在3分钟内输入验证，过期无效。',function ($message){
+        Mail::raw('您的验证密码是'.$validate.',请您在5分钟内输入验证，过期无效。',function ($message){
             $message->to($this->email);   // 收件人的邮箱地址
             $message->subject('学术网账号找回密码邮件');    // 邮件主题
         });
+    }
+    public function randomkeys($length)
+    {
+        $key = '';
+        $pattern = '1234567890abcdefghijklmnopqrstuvwxyz   
+               ABCDEFGHIJKLOMNOPQRSTUVWXYZ';
+        for($i=0;$i<$length;$i++)
+        {
+            $key .= $pattern{mt_rand(0,35)};    //生成php随机数
+        }
+        return $key;
     }
 
 }

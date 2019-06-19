@@ -30,12 +30,12 @@ class HomeController extends Controller
      */
     public function periodical_sel(Request $request){
         
-        $page=$request->input('page')??1;
-        $limit=$request->input('limit')??12;
-        $year=$request->input('year')??0;
-        $offset=ceil($page-1)*$limit;
+        $page = $request->input('page')??1;
+        $limit = $request->input('limit')??12;
+        $year = $request->input('year')??0;
+        $offset = ceil($page-1)*$limit;
 
-        $count=DB::table('pre_periodical_title')->count();
+        $count = DB::table('pre_periodical_title')->count();
 
         $arr = DB::table('pre_periodical_title as t')
             ->join('pre_periodical_content as c','t.id','=','c.id');
@@ -61,7 +61,7 @@ class HomeController extends Controller
     public function index(){
         
         //获取分类
-        $m=new HomeModel;
+        $m = new HomeModel;
         $arr=$m->index_sel();
         $this->content=$arr;
         $this->returninfo();
@@ -165,7 +165,7 @@ class HomeController extends Controller
     public function SearchContent(Request $request){
 
         $id = (int)$request->input('aid');
-        $page = (int)$request->input('page')??1;
+        //$page = (int)$request->input('page')??1;
         if(empty($id)){
             $this->code='400';
             $this->message='aid不能为空';
@@ -222,7 +222,6 @@ class HomeController extends Controller
                $this->code=400;
                $this->message='请稍后重试';
            }
-             
         }
         return $this->returninfo();
 
