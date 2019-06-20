@@ -68,8 +68,7 @@ class RegisterController extends Controller
      * 发送邮箱验证码方法
      * */
     public function SendEmail(Request $request)
-    {   
-
+    {
         $data = $request->input();
         if(empty($data['email']) || empty($data['token']))
         {
@@ -125,7 +124,7 @@ class RegisterController extends Controller
         }
         else if($result != $data['key'])
         {
-            $this->cod1585808204e='400';
+            $this->code='400';
             $this->message='邮箱验证码错误';
             return $this->returninfo();
         }
