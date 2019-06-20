@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Model\HomeModel;
+use App\Models\HomeModel;
 
 class HomeController extends Controller
 {
@@ -72,7 +72,7 @@ class HomeController extends Controller
      * */
     public function title() {
 
-        $data = DB::table('category')->select('catid','upid','catname')->get();
+        $data = DB::table('category')->select('catid','upid','catname')->where('state',0)->get();
         if($data) {
             $data = json_encode($data, true);
             $data = json_decode($data, true);
@@ -135,13 +135,14 @@ class HomeController extends Controller
         if(!empty($id)){
             $count =$count->whereIn('catid',$id);
         }
-        $count =$count->where('title','like','%'.$like.'%')->count();
+        $count =$count->where('click2',1)->where('title','like','%'.$like.'%')->count();
         //数据
         $result = DB::table('article_title');
                  if(!empty($id)){
                     $result =$result->whereIn('catid',$id);
                  }
                 $result =$result->where('title','like','%'.$like.'%')
+                ->where('click2',1)
                 ->orderBy('dateline','desc')
                 ->offset($offset)
                 ->limit($limit)
@@ -173,6 +174,7 @@ class HomeController extends Controller
             $result = DB::table('article_title as t')
             ->join('article_content as c','t.aid','=','c.aid')
             ->where('c.aid',$id)
+            ->where('click2',1)
             ->get();
             if($result){
                 $result = json_encode($result,true);
@@ -199,19 +201,19 @@ class HomeController extends Controller
             $this->code='400';
             $this->message='参数值不能为空';
         }else{
-            $result = (array)DB::table('article_zan')
+            $result = (array)DB::table('article_good')
             ->where('uid',$uid)
             ->where('aid',$aid)
             ->first();
             DB::beginTransaction();//开启事务
             if(!empty($result)){
 
-               $user=  DB::table('article_zan')->where('uid',$uid)->where('aid',$aid)->delete();
+               $user=  DB::table('article_good')->where('uid',$uid)->where('aid',$aid)->delete();
                $title= DB::table('article_title')->where('aid',$aid)->decrement('click1');
                $this->message='取消点赞';
             }else{
 
-              $user=  DB::table('article_zan')->insert(['uid'=>$uid,'aid'=>$aid]);
+              $user=  DB::table('article_good')->insert(['uid'=>$uid,'aid'=>$aid]);
               $title=  DB::table('article_title')->where('aid',$aid)->increment('click1');
               $this->message='点赞成功';
             }
@@ -236,7 +238,7 @@ class HomeController extends Controller
             $this->code='400';
             $this->message='参数值不能为空';
         }else{
-            $result = (array)DB::table('article_zan')
+            $result = (array)DB::table('article_good')
             ->where('uid',$uid)
             ->where('aid',$aid)
             ->first();

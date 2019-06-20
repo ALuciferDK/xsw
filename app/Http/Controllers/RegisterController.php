@@ -132,7 +132,7 @@ class RegisterController extends Controller
         unset($data['key']);
         $data = $this->data;//获取传入的数据
         $adminServices = new AdminServices();//实例化services
-        $result = $adminServices->insertAdmin($data);//调用管理员添加
+        $result = $adminServices->insertAdmin($data,3);//调用管理员添加
         if($result === true)
         {
             return $this->returninfo();

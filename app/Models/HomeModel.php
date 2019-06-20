@@ -10,27 +10,27 @@ class HomeModel extends Model
 
     //查首页
     public function index_sel($catid=[],$limit=[10,0]){
-    	
-    	$arr=DB::table('category');
-    	if(!empty($catid)){
-    		$arr=$arr->whereIn("catid",$catid);
-    	}
-    	$arr2=[];
-    	$arr=$arr->select('catid','upid','catname')->get()->toArray();
-    	foreach($arr as $k=>&$v){
-    		$v=(array)$v;
-    		$arr2[]=DB::table('article_title')->whereIn("catid",[$v['catid']])->select('aid','catid','title')->orderBy('dateline','desc')->offset($limit['1'])->limit($limit['0'])->get()->toArray();
-    	}
+        
+        $arr=DB::table('category')->where('state',0);
+        if(!empty($catid)){
+            $arr=$arr->whereIn("catid",$catid);
+        }
+        $arr2=[];
+        $arr=$arr->select('catid','upid','catname')->get()->toArray();
+        foreach($arr as $k=>&$v){
+            $v=(array)$v;
+            $arr2[]=DB::table('article_title')->where('click2',1)->whereIn("catid",[$v['catid']])->select('aid','catid','title')->orderBy('dateline','desc')->offset($limit['1'])->limit($limit['0'])->get()->toArray();
+        }
 
-    	foreach($arr2 as $k=>&$v){
-    		foreach($v as $k1=>&$v1){
-    			$v1=(array)$v1;
-    		}
-    	}
-    	
-    	$arr1=$this->parent_type($arr,$p=0,$arr2);
-    	return $arr1;
-    	
+        foreach($arr2 as $k=>&$v){
+            foreach($v as $k1=>&$v1){
+                $v1=(array)$v1;
+            }
+        }
+        
+        $arr1=$this->parent_type($arr,$p=0,$arr2);
+        return $arr1;
+        
     }
     //根据父级id区分
 	public function parent_type($arr,$p=0,$arr2=[]){

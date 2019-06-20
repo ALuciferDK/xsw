@@ -19,19 +19,12 @@ class AdminController extends CommonController
         $this->selPower($request);
         $adminServices = new AdminServices();//实例化对应的services层
         $data = $adminServices->getUserAll($this->data);//调用获取admin列表方法
-        //if(!empty($data))//获取成功
-       // { 
-           // array_shift($data);//删除掉超级管理员
-           // $data = json_encode($data,true);//转换成json穿
-            $this->code = '0';//print_r($data);die;
-            $this->message = '获取数据成功-超管不予展示';
-            $this->content = $data;//返回给前台数据
-            $this->returninfo();
-       // }
-       // else//执行异常
-       // {
-         //   $this->errorInfo('5');
-       // }
+       
+        $this->code = '0';//print_r($data);die;
+        $this->message = '获取数据成功-超管不予展示';
+        $this->content = $data;//返回给前台数据
+        $this->returninfo();
+      
     }
 
     /*
@@ -43,7 +36,7 @@ class AdminController extends CommonController
         $this->selPower($request);
         $data = $this->data;//获取传入的数据
         $adminServices = new AdminServices();//实例化services
-        $result = $adminServices->insertAdmin($data);//调用管理员添加
+        $result = $adminServices->insertAdmin($data,1);//调用管理员添加
         if($result === true)
         {
             $this->errorInfo('0');
