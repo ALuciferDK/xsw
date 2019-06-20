@@ -32,9 +32,9 @@ class AdminServices
             $where[]=['a_id','=',$arr['id']];
             $where1[]=['a_id','=',$arr['id']];
         }
-        $where[]=['a_is_super','!=','1'];//不能查超管
+        $where[]=['a_meun','!=','2'];//不能查超管
         $where[]=['a_name','like','%'.$arr['name'].'%'];
-        $where1[]=['a_is_super','!=','1'];//不能查超管
+        $where1[]=['a_meun','!=','2'];//不能查超管
         $where1[]=['a_email','like','%'.$arr['name'].'%'];
         $total=$this->userModel->where($where)->orWhere($where1)->count();
         $result = $this->userModel->getUserAll($info,$info2,$offset,$limit,$where,$where1);//指定查询需要两个字段值
@@ -113,31 +113,20 @@ class AdminServices
         }
         else
         {
-            // DB::beginTransaction();//事务开启
             try{
                 $result = $this->userModel->del($where);//调用删除方法
                 if(!$result)
                 {
                     $flag = false;
-                    // DB::rollBack();//如果失败，事务回滚
                 }
                 else
                 {
                     $this->roleModel->del($where);//调用删除方法
-                    // if(!$result)
-                    // {   
-                    //     $flag = false;
-                    //     // DB::rollBack();//如果失败，事务回滚
-                    // }
-                    // else
-                    // {
-                    //     // DB::commit();//成功提交
-                    // }
+                   
                 } 
             }catch (\Exception $exception)
             {
                 $flag = false;
-                // DB::rollBack();//执行异常回滚
             }
         }
 
@@ -163,8 +152,8 @@ class AdminServices
         unset($data['token']);
         $where = ['a_id'=>$data['a_id']];//执行条件
             
-            if(!empty($data['a_is_freeze'])){
-                $data1= ['a_is_freeze'=>$data['a_is_freeze']];
+            if(!empty($data['a_state'])){
+                $data1= ['a_state'=>$data['a_state']];
                 $result = $this->userModel->upd($data1,$where);//调用方法
             }
             if(!empty($data['a_password'])){

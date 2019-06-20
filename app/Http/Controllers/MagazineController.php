@@ -16,62 +16,213 @@ class MagazineController extends CommonController
 	 *  sel -所有杂志列表-单期杂志的所有图片-单期杂志的采集文本-杂志图片编辑内容
 	 */
 
+	//期刊标题上传
+	public function add_title(){
 
+		$user_id=$this->selPower($request);
 
-	/**添加杂志
-	 *
-	 * if_add 0添加标题，1添加图片|采集文本，2添加编辑内容-图片文本关联表
-	 */
-	public function add(Request $request){
-		
-        $user_id=$this->selPower($request);
-
-		$m_ser=new MagazineServices($this->data);
-		$res=$m_ser->add($user_id);
-		if(!$res){
-			$this->errorInfo(2);
-		}elseif(is_array($res)){
+        $m_ser=new MagazineServices($this->data);
+		$res=$m_ser->add_title();
+		if(is_array($res)){
 			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
+	}
+	//期刊标题上传
+	public function add_img(){
+
+		$user_id=$this->selPower($request);
+		
+        $m_ser=new MagazineServices($this->data);
+		$res=$m_ser->add_img();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
+	}
+	//文章附件-切片上传
+	public function add_file_qie(){
+		 $user_id=$this->selPower($request);
+
+		$res=(array)DB::table('article_title')->where([['aid'=>$this->data['aid']],['uid'=>$this->data['uid']]])->first();
+        if(empty($res)||$res['click2']!=3){
+        	$this->content = ['当前文章不能进行修改'];
+			$this->errorInfo(2);
+        }
+        $m_ser=new MagazineServices($this->data);
+		$res=$m_ser->add_file_qie();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
+	}
+	//文章附件-合并切片上传
+	public function add_file_he(){
+		 $user_id=$this->selPower($request);
+
+		$res=(array)DB::table('article_title')->where([['aid'=>$this->data['aid']],['uid'=>$this->data['uid']]])->first();
+        if(empty($res)||$res['click2']!=3){
+        	$this->content = ['当前文章不能进行修改'];
+			$this->errorInfo(2);
+        }
+        $m_ser=new MagazineServices($this->data);
+		$res=$m_ser->add_file_he();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
+	}
+	//文章附件-普通文件上传
+	public function add_file(){
+		 $user_id=$this->selPower($request);
+
+		$res=(array)DB::table('article_title')->where([['aid'=>$this->data['aid']],['uid'=>$this->data['uid']]])->first();
+        if(empty($res)||$res['click2']!=3){
+        	$this->content = ['当前文章不能进行修改'];
+			$this->errorInfo(2);
+        }
+        $m_ser=new MagazineServices($this->data);
+		$res=$m_ser->add_file();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
 		}
 		$this->errorInfo(0);
 	}
 
-	/**修改杂志
-	 *
-	 * if_upd 0杂志发布状态，1杂志图片编辑状态
-	 * is_flag 状态：0草稿，1待发布，2已发布 --- 状态：0未编辑，1已编辑，2禁用
+	/**添加文章标题
 	 */
-	public function upd(Request $request){
+	public function add_word_title(Request $request){
+		
+        $user_id=$this->selPower($request);
 
+		$m_ser=new MagazineServices($this->data);
+		$res=$m_ser->word_title();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
+	}
+	/*修改文章标题
+	 aid
+	 */
+	public function upd_word_title(Request $request){
+		
 		$user_id=$this->selPower($request);
 
+		$res=(array)DB::table('article_title')->where([['aid'=>$this->data['aid']],['uid'=>$this->data['uid']]])->first();
+        if(empty($res)||$res['click2']!=3){
+        	$this->content = ['当前文章不能进行修改'];
+			$this->errorInfo(2);
+        }
+
 		$m_ser=new MagazineServices($this->data);
-		if($m_ser->upd($user_id)){
-			$this->errorInfo(0);
-		};
-		$this->errorInfo(2);
-	}
-	/**查看杂志 */
-	public function sel(Request $request){
-		
-		$this->selPower($request);
-		try {
-			$m_ser=new MagazineServices($this->data);
-			$this->content=$m_ser->sel();
-			$this->errorInfo(0);
-		} catch (Exception $e) {
-			$this->errorInfo(5);
+		$res=$m_ser->word_title();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
 		}
-		
+		$this->errorInfo(0);
 	}
-	//删除本地数据
-	function del(Request $request){
-		$this->selPower($request);
+	/*添加文章内容
+	 */
+	public function add_word_con(Request $request){
+		
+		 $user_id=$this->selPower($request);
+
+		$res=(array)DB::table('article_title')->where([['aid'=>$this->data['aid']],['uid'=>$this->data['uid']]])->first();
+        if(empty($res)||$res['click2']!=3){
+        	$this->content = ['当前文章不能进行修改'];
+			$this->errorInfo(2);
+        }
+
 		$m_ser=new MagazineServices($this->data);
-		if($m_ser->del()){
-			$this->errorInfo(0);
-		};
-		$this->errorInfo(2);
+		$res=$m_ser->word_con();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
+	}
+	/*修改文章内容
+	 cid
+	 */
+	public function upd_word_con(Request $request){
+		
+		 $user_id=$this->selPower($request);
+
+		$res=(array)DB::table('article_title')->where([['aid'=>$this->data['aid']],['uid'=>$this->data['uid']]])->first();
+        if(empty($res)||$res['click2']!=3){
+        	$this->content = ['当前文章不能进行修改'];
+			$this->errorInfo(2);
+        }
+
+		$m_ser=new MagazineServices($this->data);
+		$res=$m_ser->word_con();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
+	}
+	//用户修改自己的文章状态
+	/**
+	 * uid 判断用户是否该文章发布人
+	 */
+	public function upd_word_user(){
+
+		$res=(array)DB::table('article_title')->where([['aid'=>$this->data['aid']],['uid'=>$this->data['uid']]])->first();
+		if(empty($res)||$res['click2']==1||$res['click2']==2){
+        	$this->content = ['该文章不能修改'];
+			$this->errorInfo(2);
+        }
+		if($this->data['state']!=0 &&$this->data['state']!=3){
+			$this->content = ['不能修改为该状态'];
+			$this->errorInfo(2);
+		}
+		$m_ser=new MagazineServices($this->data);
+		$res=$m_ser->upd_word();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
+	}
+	//管理员修改文章状态
+	public function upd_word_admin(){
+		$m_ser=new MagazineServices($this->data);
+		$res=$m_ser->upd_word();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
+	}
+
+	//修改文章分类
+	public function upd_type()){
+		$m_ser=new MagazineServices($this->data);
+		$res=$m_ser->upd_type();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
+	}
+	//添加文章分类
+	public function add_type(){
+		$m_ser=new MagazineServices($this->data);
+		$res=$m_ser->add_type();
+		if(is_array($res)){
+			$this->content = $res;
+			$this->errorInfo(2);
+		}
+		$this->errorInfo(0);
 	}
 
 }
