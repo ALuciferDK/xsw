@@ -205,7 +205,7 @@ class MagazineController extends CommonController
 	}
 
 	//修改文章分类
-	public function upd_type()){
+	public function upd_type(){
 		$m_ser=new MagazineServices($this->data);
 		$res=$m_ser->upd_type();
 		if(is_array($res)){
