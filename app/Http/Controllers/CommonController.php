@@ -22,19 +22,13 @@ class CommonController extends Controller
      * */
     public function __construct(Request $request)
     {  
-        if($arr=file_get_contents("php://input"))
-        {
-            //接值
-            $arr=json_decode($arr,1);
-            $content=json_encode($arr['content']);
-        }else
-        {
-            $this->code = '2';
-            $this->message = '操作异常,post请求';
-            $this->returninfo();
-        }
-        if(empty($arr) || !isset($arr['timestamp'])|| !isset($arr['sign'])|| !isset($content))
-        {//如果传输的
+          $arr=$request->post();
+          if(empty($arr)){
+                $this->code = '2';
+                $this->message = '操作异常,post请求';
+                $this->returninfo();
+          }
+        if(empty($arr) || !isset($arr['timestamp'])|| !isset($arr['sign'])|| !isset($content)){//如果传输的
             $this->errorInfo('-7');
         }else{
             $this->add_log('log','postlog',$arr);
@@ -44,8 +38,7 @@ class CommonController extends Controller
         $sign = md5($arr['timestamp'] . $content . env('APP_KEY_COMMON'));
         
         //签名错误
-        if (time() - $arr['timestamp'] > 30)
-        {
+        if (time() - $arr['timestamp'] > 30) {
             $this->errorInfo('-3');
         }
         else if($sign != $arr['sign'])
@@ -56,6 +49,7 @@ class CommonController extends Controller
             $this->content = $arr;
             $this->returninfo();
         }
+        
          //解析发送过来的数据
         $this->data = $arr['content'];
         
@@ -187,7 +181,8 @@ class CommonController extends Controller
     {
         $CommonServices = new CommonServices;
         $data = $CommonServices->is_freeze($id);
-        if($data['a_is_freeze'] === 0)
+        //'1正常(审核)，2未审核，3审核失败，0禁用'
+        if($data['a_state'] ==3 ||$data['a_state'] ==0)
         {
             return false;
         }
@@ -237,7 +232,7 @@ class CommonController extends Controller
         
     }
 
-
+   
 }
 /*
 传参格式说明：

@@ -28,6 +28,9 @@ Route::any('email/get','RegisterController@emailGetData');
 Route::any('SendEmail_pass','RegisterController@SendEmail_pass');//找回密码发送邮件
 Route::any('sel_zan','HomeController@sel_zan');//查看用户是否对该文章点赞
 Route::any('do_zan','HomeController@sel_zan');//用户对该文章点赞&取消点赞
+
+Route::any('addfile','AddfilesController@addfile');//用户对该文章点赞&取消点赞
+
 Route::group(['middleware'=>'power'],function (){
 
 });
